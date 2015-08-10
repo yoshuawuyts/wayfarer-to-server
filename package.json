@@ -22,7 +22,8 @@
     "get-own-property-symbols": "^0.5.1",
     "is-incoming-message": "^1.0.0",
     "is-server-response": "^1.0.0",
-    "methodist": "^2.0.0"
+    "methodist": "^2.0.0",
+    "xtend": "^4.0.0"
   },
   "devDependencies": {
     "istanbul": "^0.3.17",
