@@ -17,11 +17,7 @@ test('wayfarer() should assert params & detect if wayfarer was passed', function
 test('.emit() assert params', function (t) {
   t.plan(3)
   const router = toServer(wayfarer())
-  router.on('foo', {
-    all: function () {
-      t.pass('called')
-    }
-  })
+  router.on('foo', {})
 
   t.throws(router.bind(null), /string/)
   t.throws(router.bind(null, 'foo'), /req/)
