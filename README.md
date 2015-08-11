@@ -15,21 +15,20 @@ $ npm install wayfarer-to-server
 
 ## Usage
 ```js
-const toServer = require('wayfarer-to-server')
-const match = require('pathname-match')
-const wayfarer = require('wayfarer')
-const http = require('http')
+import toServer from 'wayfarer-to-server'
+import match from 'pathname-match'
+import wayfarer from 'wayfarer'
+import http from 'http'
 
 const server = http.createServer((req, res) => {
   const router = toServer(wayfarer())
 
   router.on('/hello', {
-    all: (req, res, params) => console.log('any route matches'),
-    get: (req, res, params) => console.log('get')
+    get: (req, res, params) => console.log('get'),
+    all: (req, res, params) => console.log('any route matches')
   })
 
-  const route = match(req.url)
-  router(req, res, route)
+  router(match(req.url), req, res)
 })
 
 server.listen(1337)

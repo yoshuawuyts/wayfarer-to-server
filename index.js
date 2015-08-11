@@ -84,5 +84,6 @@ function createSsa (base, req, res) {
 function demuxSsa (params, cb) {
   const req = params._ssa.req
   const res = params._ssa.res
+  delete params._ssa
   cb(req, res, params)
 }

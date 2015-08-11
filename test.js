@@ -1,3 +1,5 @@
+const isReq = require('is-incoming-message')
+const isRes = require('is-server-response')
 const wayfarer = require('wayfarer')
 const noop = require('noop2')
 const http = require('http')
@@ -103,6 +105,29 @@ test('.on() should allow deep nesting', function (t) {
   nets('http://localhost:' + port + '/foo/bin/bar')
 })
 
+test('.on() should pass `req, res, params` to children', function (t) {
+  t.plan(5)
+  const server = http.createServer(function (req, res) {
+    const r1 = toServer(wayfarer())
+    r1.on(':foo', { all: allFn })
+    r1(req.url, req, res)
+  })
+
+  server.listen()
+  const port = server.address().port
+  nets('http://localhost:' + port + '/bar')
+
+  function allFn (req, res, params) {
+    t.ok(isReq(req), 'req type')
+    t.ok(isRes(res), 'res type')
+    t.equal(typeof params, 'object')
+    t.equal(params.foo, 'bar')
+    t.notOk(params._ssa, 'no private properties')
+    res.end()
+    server.close()
+  }
+})
+
 test('.on() should delegate default path up the router stack', function (t) {
   t.plan(4)
 
@@ -117,12 +142,6 @@ test('.on() should delegate default path up the router stack', function (t) {
     r2.on('bin', r3)
 
     r1(req.url, req, res)
-
-    function pass () {
-      t.pass('called')
-      res.end()
-      if (++n === 4) server.close()
-    }
   })
 
   server.listen()
@@ -132,4 +151,10 @@ test('.on() should delegate default path up the router stack', function (t) {
   nets('http://localhost:' + port + '/foo')
   nets('http://localhost:' + port + '/foo/bin')
   nets('http://localhost:' + port + '/foo/bin/bar')
+
+  function pass (req, res, params) {
+    t.pass('called')
+    res.end()
+    if (++n === 4) server.close()
+  }
 })
