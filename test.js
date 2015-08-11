@@ -108,5 +108,32 @@ test('.on() should allow deep nesting', function (t) {
 })
 
 test('.on() should delegate default path up the router stack', function (t) {
+  t.plan(4)
 
+  var n = 0
+  const server = http.createServer(function (req, res) {
+    const r1 = toServer(wayfarer('/404'))
+    const r2 = toServer(wayfarer())
+    const r3 = toServer(wayfarer())
+
+    r1.on('/404', { all: pass })
+    r1.on('foo', r2)
+    r2.on('bin', r3)
+
+    r1(req.url, req, res)
+
+    function pass () {
+      t.pass('called')
+      res.end()
+      if (++n === 4) server.close()
+    }
+  })
+
+  server.listen()
+
+  const port = server.address().port
+  nets('http://localhost:' + port + '/')
+  nets('http://localhost:' + port + '/foo')
+  nets('http://localhost:' + port + '/foo/bin')
+  nets('http://localhost:' + port + '/foo/bin/bar')
 })
