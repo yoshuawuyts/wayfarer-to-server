@@ -36,7 +36,8 @@ function toServer (router) {
     // handle server init
     if (isReq(req) && isRes(res)) {
       const ssa = createSsa({}, req, res)
-      return router(route, ssa, router.default)
+      const dft = { node: { cb: [ router.default ] } }
+      return router(route, ssa, dft)
     }
 
     // handle subrouter
