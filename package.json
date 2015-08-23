@@ -1,6 +1,6 @@
 {
   "name": "wayfarer-to-server",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "Wrap wayfarer to provide HTTP method matching and req, res delegation",
   "main": "index.js",
   "scripts": {
