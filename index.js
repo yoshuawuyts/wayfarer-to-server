@@ -13,8 +13,8 @@ function toServer (router) {
   assert.equal(typeof router, 'function')
 
   const syms = getOwnSymbols(router)
-  assert.equal(syms.length, 1, 'router should be an instance of wayfarer')
-  const sym = syms[0]
+  const sym = syms.length ? syms[0] : router._sym
+  assert.ok(sym, 'router should be an instance of wayfarer')
 
   emit[sym] = true
   emit.emit = emit
