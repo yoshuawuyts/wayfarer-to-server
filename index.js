@@ -50,6 +50,7 @@ function toServer (router) {
   // (str, obj) -> obj
   function on (route, methods) {
     assert.equal(typeof route, 'string')
+    methods = methods || {}
 
     // mount subrouter
     if (methods[sym]) return router.on(route, methods)
@@ -57,10 +58,16 @@ function toServer (router) {
     assert.equal(typeof methods, 'object')
 
     // mount http methods
-    router.on(route, function (params) {
-      demuxSsa(params, function (req, res, params) {
-        const meth = methodist(req, router, methods)
+    router.on(route, function (args) {
+      demuxSsa(args, function (req, res, params) {
+        const meth = methodist(req, defaultFn, methods)
         meth(req, res, params)
+
+        // default function to call if methods don't match
+        // null -> null
+        function defaultFn () {
+          router._default(args)
+        }
       })
     })
     return emit
@@ -70,6 +77,7 @@ function toServer (router) {
 // mux server params into an object
 // (req, res) -> obj
 function createSsa (base, req, res) {
+  assert.equal(typeof base, 'object')
   const ret = xtend(base, {
     _ssa: {
       req: req,
@@ -83,8 +91,12 @@ function createSsa (base, req, res) {
 // and pass them into a function
 // (obj, fn) -> null
 function demuxSsa (params, cb) {
+  assert.equal(typeof params, 'object')
+  assert.equal(typeof params._ssa, 'object')
+  assert.equal(typeof cb, 'function')
   const req = params._ssa.req
   const res = params._ssa.res
-  delete params._ssa
-  cb(req, res, params)
+  const nw = xtend(params)
+  delete nw._ssa
+  cb(req, res, nw)
 }

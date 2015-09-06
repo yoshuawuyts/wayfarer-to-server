@@ -106,7 +106,7 @@ test('.on() should allow deep nesting', function (t) {
 })
 
 test('.on() should pass `req, res, params` to children', function (t) {
-  t.plan(5)
+  t.plan(4)
   const server = http.createServer(function (req, res) {
     const r1 = toServer(wayfarer())
     r1.on(':foo', { all: allFn })
@@ -122,7 +122,6 @@ test('.on() should pass `req, res, params` to children', function (t) {
     t.ok(isRes(res), 'res type')
     t.equal(typeof params, 'object')
     t.equal(params.foo, 'bar')
-    t.notOk(params._ssa, 'no private properties')
     res.end()
     server.close()
   }
@@ -156,5 +155,28 @@ test('.on() should delegate default path up the router stack', function (t) {
     t.pass('called')
     res.end()
     if (++n === 4) server.close()
+  }
+})
+
+// regression test
+test(".on() should delegate to default path if method doesn't match", function (t) {
+  t.plan(1)
+
+  const server = http.createServer(function (req, res) {
+    const r = toServer(wayfarer('/404'))
+    r.on('/404', { all: pass })
+    r.on('/', { post: noop })
+    r(req.url, req, res)
+  })
+
+  server.listen()
+
+  const port = server.address().port
+  nets('http://localhost:' + port + '/')
+
+  function pass (req, res, params) {
+    t.pass('called')
+    res.end()
+    server.close()
   }
 })
