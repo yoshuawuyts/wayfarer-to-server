@@ -28,22 +28,19 @@ function toServer (router) {
   function emit (route, req, res) {
     assert.equal(typeof route, 'string')
     assert.ok(req, 'no req specified')
+    assert.ok(req._ssa || res, 'no res specified')
 
-    if (!req._ssa) {
-      assert.ok(res, 'no res specified')
-    }
-
-    // handle server init
+    // called from server
     if (isReq(req) && isRes(res)) {
-      const ssa = createSsa({}, req, res)
+      const ssa = { _ssa: { req: req, res: res } }
       const dft = { node: { cb: [ router._default ] } }
       return router(route, ssa, dft)
     }
 
-    // handle subrouter
+    // called as a subroute
     const params = req
     const parentDefault = res
-    router(route, params, parentDefault)
+    router.emit(route, params, parentDefault)
   }
 
   // register a new route on a method
@@ -53,50 +50,26 @@ function toServer (router) {
     methods = methods || {}
 
     // mount subrouter
-    if (methods[sym]) return router.on(route, methods)
+    if (methods[sym]) {
+      const subrouter = methods
+      return router.on(route, subrouter)
+    }
 
     assert.equal(typeof methods, 'object')
 
     // mount http methods
-    router.on(route, function (args) {
-      demuxSsa(args, function (req, res, params) {
-        const meth = methodist(req, defaultFn, methods)
-        meth(req, res, params)
+    router.on(route, function (args, dft) {
+      if (dft && dft.node) dft = dft.node.cb[0]
+      if (dft) dft.bind(null, args)
 
-        // default function to call if methods don't match
-        // null -> null
-        function defaultFn () {
-          router._default(args)
-        }
-      })
+      const req = args._ssa.req
+      const res = args._ssa.res
+      const nw = xtend(args)
+      delete nw._ssa
+
+      const meth = methodist(req, dft, methods)
+      meth(req, res, nw)
     })
     return emit
   }
-}
-
-// mux server params into an object
-// (req, res) -> obj
-function createSsa (base, req, res) {
-  assert.equal(typeof base, 'object')
-  const ret = xtend(base, {
-    _ssa: {
-      req: req,
-      res: res
-    }
-  })
-  return ret
-}
-
-// demux an object into server params
-// and pass them into a function
-// (obj, fn) -> null
-function demuxSsa (params, cb) {
-  assert.equal(typeof params, 'object')
-  assert.equal(typeof params._ssa, 'object')
-  assert.equal(typeof cb, 'function')
-  const req = params._ssa.req
-  const res = params._ssa.res
-  const nw = xtend(params)
-  delete nw._ssa
-  cb(req, res, nw)
 }
