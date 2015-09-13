@@ -159,20 +159,22 @@ test('.on() should delegate default path up the router stack', function (t) {
 })
 
 // regression test
-test(".on() should delegate to default path if method doesn't match", function (t) {
+test.only(".on() should delegate to default path if method doesn't match", function (t) {
   t.plan(1)
 
   const server = http.createServer(function (req, res) {
-    const r = toServer(wayfarer('/404'))
-    r.on('/404', { all: pass })
-    r.on('/', { post: noop })
-    r(req.url, req, res)
+    const r1 = toServer(wayfarer('/404'))
+    const r2 = toServer(wayfarer())
+    r1.on('/404', { all: pass })
+    r1.on('/foo', r2)
+    r2.on('/', { post: noop })
+    r1(req.url, req, res)
   })
 
   server.listen()
 
   const port = server.address().port
-  nets('http://localhost:' + port + '/')
+  nets('http://localhost:' + port + '/foo')
 
   function pass (req, res, params) {
     t.pass('called')

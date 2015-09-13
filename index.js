@@ -23,8 +23,8 @@ function toServer (router) {
   return emit
 
   // match a route and execute the corresponding callback
-  // (obj, obj) -> null
   // original: {path, params parentDefault}
+  // (obj, obj) -> null
   function emit (route, req, res) {
     assert.equal(typeof route, 'string')
     assert.ok(req, 'no req specified')
@@ -40,6 +40,8 @@ function toServer (router) {
     // called as a subroute
     const params = req
     const parentDefault = res
+    assert.equal(typeof params, 'object')
+    assert.equal(typeof parentDefault, 'object')
     router.emit(route, params, parentDefault)
   }
 
