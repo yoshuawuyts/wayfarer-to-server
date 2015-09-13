@@ -16,6 +16,8 @@ function toServer (router) {
   const sym = syms.length ? syms[0] : router._sym
   assert.ok(sym, 'router should be an instance of wayfarer')
 
+  emit._subrouters = router._subrouters
+  emit._routes = router._routes
   emit[sym] = true
   emit.emit = emit
   emit.on = on
