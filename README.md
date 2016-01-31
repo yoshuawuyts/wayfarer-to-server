@@ -5,6 +5,11 @@
 [![Downloads][downloads-image]][downloads-url]
 [![js-standard-style][standard-image]][standard-url]
 
+__31/01/2016:__ since
+[wayfarer@6.0.0](https://github.com/yoshuawuyts/wayfarer/commit/50d4978cbc29ac6a25edae6c85659d17b0ec736b)
+this project is no longer compatible with `wayfarer` and has been deprecated.
+An alternative server implementation should be linked on the `wayfarer` page.
+
 Wrap [`wayfarer`](https://github.com/yoshuawuyts/wayfarer) to provide HTTP
 method matching and `req`, `res` delegation.
 
